@@ -70,7 +70,6 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        // Cek apakah user mencoba hapus akun sendiri
         if ($user->id === Auth::id()) {
             return back()->with('error', 'Tidak bisa menghapus akun sendiri!');
         }

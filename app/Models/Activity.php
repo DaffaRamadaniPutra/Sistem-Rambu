@@ -5,7 +5,6 @@ use Spatie\Activitylog\Models\Activity as BaseActivity;
 
 class Activity extends BaseActivity
 {
-    // Tambahkan scope untuk filter
     public function scopeByUser($query, $userId)
     {
         return $query->where('causer_id', $userId);

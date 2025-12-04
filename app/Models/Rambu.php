@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, 
  * @property-read int|null $activities_count
  * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Rambu newModelQuery()
@@ -44,7 +44,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Rambu extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;     
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected $fillable = [
         'nama_rambu', 'jenis', 'lokasi', 'koordinat_gps',
@@ -54,8 +54,9 @@ class Rambu extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['nama_rambu', 'jenis', 'lokasi', 'kondisi', 'koordinat_gps'])
-            ->logOnlyDirty() // hanya simpan field yang berubah
+            ->logOnly(['nama_rambu', 'jenis', 'lokasi', 'kondisi', 'koordinat_gps', 'foto'])
+            ->logOnlyDirty()
+            ->dontLogIfAttributesChangedOnly(['deleted_at'])      
             ->setDescriptionForEvent(fn(string $eventName) => "Rambu telah {$eventName}")
             ->useLogName('rambu');
     }
@@ -63,5 +64,21 @@ class Rambu extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    protected static function booted()
+    {
+        static::forceDeleting(function ($rambu) {
+            activity()                                         
+                ->causedBy(auth()->user() ?? null)
+                ->performedOn($rambu)
+                ->withProperties([
+                    'id'         => $rambu->id,
+                    'nama_rambu' => $rambu->nama_rambu,
+                    'lokasi'     => $rambu->lokasi,
+                ])
+                ->log('Rambu dihapus PERMANEN dari sistem');   
+            static::unsetEventDispatcher();
+        });
     }
 }

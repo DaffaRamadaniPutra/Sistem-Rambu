@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Activity; // Pakai model custom jika dibuat
+use App\Models\Activity; 
 use Illuminate\Http\Request;
 
 class ActivityLogController extends Controller
@@ -11,7 +11,6 @@ class ActivityLogController extends Controller
     {
         $query = Activity::with('causer')->latest();
 
-        // Filter opsional berdasarkan tanggal (dari query string, misalnya ?start=2023-01-01&end=2023-12-31)
         if ($request->has('start') && $request->has('end')) {
             $query->whereBetween('created_at', [$request->start, $request->end]);
         }
@@ -19,5 +18,27 @@ class ActivityLogController extends Controller
         $activities = $query->paginate(20);
 
         return view('logs.index', compact('activities'));
+    }
+
+    public function clear(Request $request)
+    {
+        if (!auth()->user()->isAdmin()) {
+            abort(403);
+        }
+
+        if ($request->header('X-Requested-With') !== 'XMLHttpRequest') {
+            abort(403);
+        }
+
+        if ($request->confirmation !== 'HAPUS SEMUA LOG PERMANEN') {
+            return response()->json(['success' => false, 'message' => 'Konfirmasi salah!']);
+        }
+
+        Activity::truncate(); 
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Semua log aktivitas telah dihapus permanen!'
+        ]);
     }
 }

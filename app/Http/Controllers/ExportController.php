@@ -19,7 +19,6 @@ class ExportController extends Controller
 
     public function pdf(Request $request)
     {
-        // Ambil data dengan filter yang sama seperti index
         $query = Rambu::query();
     
         if ($request->filled('search')) {
@@ -38,10 +37,8 @@ class ExportController extends Controller
     
         $rambus = $query->with('user')->latest()->get();
     
-        // Generate nomor surat otomatis
         $nomorSurat = 'B-' . date('Y') . '/' . str_pad(Rambu::count(), 4, '0', STR_PAD_LEFT);
     
-        // Data untuk QR Code (link ke detail rambu)
         $rambus = $rambus->map(function ($rambu) {
             $url = route('rambu.show', $rambu);
             $rambu->qr_code = \QrCode::format('svg')->size(200)->generate($url);

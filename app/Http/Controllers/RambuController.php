@@ -14,7 +14,6 @@ class RambuController extends Controller
     {
         $query = Rambu::query();
     
-        // SEARCH (nama rambu atau lokasi)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -22,18 +21,15 @@ class RambuController extends Controller
                   ->orWhere('lokasi', 'LIKE', "%{$search}%");
             });
         }
-    
-        // FILTER JENIS
+
         if ($request->filled('jenis') && $request->jenis !== 'semua') {
             $query->where('jenis', $request->jenis);
         }
-    
-        // FILTER KONDISI
+
         if ($request->filled('kondisi') && $request->kondisi !== 'semua') {
             $query->where('kondisi', $request->kondisi);
         }
-    
-        // FILTER USER (hanya admin yang lihat ini)
+
         if ($request->filled('user_id') && Auth::user()->isAdmin()) {
             $query->where('user_id', $request->user_id);
         }
@@ -55,25 +51,22 @@ class RambuController extends Controller
             'lokasi'         => 'required|string',
             'koordinat_gps'  => 'nullable|string',
             'kondisi'        => 'required|in:Baik,Rusak,Perlu Perbaikan',
-            'foto'           => 'required|image|mimes:jpg,jpeg,png|max:3048', // WAJIB + maks 3MB
+            'foto'           => 'required|image|mimes:jpg,jpeg,png|max:3048', 
         ]);
     
         $data['user_id'] = Auth::id();
     
         if ($request->hasFile('foto')) {
-            // Hapus foto lama kalau ada
             if (isset($rambu) && $rambu->foto) {
                 Storage::disk('public')->delete($rambu->foto);
             }
         
             $file = $request->file('foto');
             
-            // Validasi ketat + hanya izinkan jpg, jpeg, png
             $request->validate([
                 'foto' => 'required|image|mimes:jpg,jpeg,png|max:3048'
             ]);
         
-            // Nama file acak 40 karakter + ekstensi asli
             $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('fotos', $filename, 'public');
         
@@ -103,10 +96,9 @@ class RambuController extends Controller
             'lokasi'         => 'required|string',
             'koordinat_gps'  => 'nullable|string',
             'kondisi'        => 'required|in:Baik,Rusak,Perlu Perbaikan',
-            'foto'           => 'nullable|image|mimes:jpg,jpeg,png|max:3048', // boleh kosong kalau ganti
+            'foto'           => 'nullable|image|mimes:jpg,jpeg,png|max:3048', 
         ];
-    
-        // Kalau tidak ada foto lama → foto wajib di-upload
+
         if (!$rambu->foto) {
             $rules['foto'] = 'required|image|mimes:jpg,jpeg,png|max:3048';
         }
@@ -125,19 +117,16 @@ class RambuController extends Controller
 
     public function destroy(Rambu $rambu)
     {
-        // Cek hak akses
         if ($rambu->user_id !== Auth::id() && Auth::user()->role !== 'admin') {
             abort(403);
         }
-    
-        // Hapus foto kalau ada
+
         if ($rambu->foto) {
             Storage::delete('public/' . $rambu->foto);
         }
     
         $rambu->delete();
     
-        // PAKAI redirect() BIAR NOTIFIKASI HANYA 1 KALI
         return redirect()->route('rambu.index')
                          ->with('success', 'Rambu berhasil dihapus!');
     }
@@ -151,8 +140,7 @@ class RambuController extends Controller
     public function restore($id)
     {
         $rambu = Rambu::onlyTrashed()->findOrFail($id);
-    
-        // Hanya admin atau pemilik yang bisa restore
+
         if (Auth::user()->role !== 'admin' && $rambu->user_id !== Auth::id()) {
             abort(403, 'Akses ditolak!');
         }
@@ -176,12 +164,10 @@ class RambuController extends Controller
     {
         $rambu = Rambu::onlyTrashed()->findOrFail($id);
 
-        // Hanya admin yang boleh
         if (!Auth::user()->isAdmin()) {
             abort(403);
         }
 
-        // Hapus foto kalau ada
         if ($rambu->foto) {
             Storage::delete('public/' . $rambu->foto);
         }

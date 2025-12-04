@@ -8,7 +8,6 @@
         <form action="{{ route('rambu.update', $rambu) }}" method="POST" enctype="multipart/form-data">
             @csrf @method('PUT')
 
-            <!-- Sama seperti create, tapi value diisi -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">Nama Rambu</label>

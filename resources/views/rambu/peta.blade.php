@@ -34,9 +34,14 @@
     </div>
 
     <!-- Peta -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
-        <div id="map" class="h-96 md:h-screen"></div>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden relative z-10">
+        <div id="map" class="h-96 md:h-screen w-full"></div>
     </div>
+
+    <style>
+        .leaflet-container { z-index: 10 !important; }
+        .leaflet-pane, .leaflet-top, .leaflet-bottom { z-index: 10 !important; }
+    </style>
 
     <!-- Legend -->
     <div class="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 flex flex-wrap gap-8 text-sm">
@@ -99,7 +104,7 @@
                     : `<div class="bg-gray-200 dark:bg-gray-700 border-2 border-dashed rounded-xl w-40 h-40 mx-auto mb-3 flex items-center justify-center text-gray-500 dark:text-gray-400">Tidak ada foto</div>`;
 
                 const popupContent = `
-                    <div class="text-center p-4 bg-white dark:bg-gray-800">
+                    <div class="text-center p-4 bg-white dark:bg-gray-800 rounded-xl shadow-2xl">
                         ${fotoHtml}
                         <h3 class="font-bold text-xl mt-3 text-gray-900 dark:text-gray-200">${r.nama_rambu}</h3>
                         <p class="text-sm mt-2 text-gray-700 dark:text-gray-400"><strong>Jenis:</strong> ${r.jenis}</p>
@@ -107,9 +112,13 @@
                         <p class="text-sm mt-2 text-gray-700 dark:text-gray-400"><strong>Kondisi:</strong> 
                             <span style="color:${color}; font-weight:bold;">${r.kondisi}</span>
                         </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-3 border-t pt-2">
+                            Dibuat: ${new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            pukul ${new Date(r.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
                         <a href="/rambu/${r.id}" 
-                           class="inline-block mt-5 bg-blue-600 text-white px-8 py-3 rounded-xl text-base font-bold hover:bg-blue-700 transition-all shadow-lg">
-                           Lihat Detail
+                        class="inline-block mt-4 bg-blue-600 text-white px-8 py-3 rounded-xl text-base font-bold hover:bg-blue-700 transition-all shadow-lg">
+                        Lihat Detail
                         </a>
                     </div>
                 `;

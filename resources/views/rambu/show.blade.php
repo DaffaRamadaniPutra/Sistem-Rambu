@@ -56,6 +56,32 @@
                 </div>
             </div>
 
+            <div class="mt-12 pt-8 border-t-4 border-dashed border-gray-300 dark:border-gray-700">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg">
+                    <div class="flex items-center gap-4">
+                        <i class="fas fa-calendar-plus text-3xl text-blue-600 dark:text-blue-400"></i>
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Dibuat pada</p>
+                            <p class="font-black text-gray-900 dark:text-gray-100">
+                                {{ $rambu->created_at->translatedFormat('d F Y') }}
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                pukul {{ $rambu->created_at->format('H:i') }} WIB
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <i class="fas fa-user text-3xl text-green-600 dark:text-green-400"></i>
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Oleh</p>
+                            <p class="font-bold text-gray-900 dark:text-gray-100">
+                                {{ $rambu->user?->name ?? 'Sistem' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="mt-10 flex gap-4">
                 <a href="{{ route('rambu.index') }}" class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700">Kembali</a>
                 <a href="{{ route('rambu.edit', $rambu) }}" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700">Edit</a>

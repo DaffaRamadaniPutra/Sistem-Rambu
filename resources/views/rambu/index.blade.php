@@ -4,146 +4,181 @@
 <div class="max-w-7xl mx-auto">
     <div class="flex justify-between items-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-200">Data Rambu Lalu Lintas</h1>
-        <a href="{{ route('rambu.create') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 flex items-center gap-2">
-            Add Rambu
+        <a href="{{ route('rambu.create') }}" 
+           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition shadow-lg">
+            <i class="fas fa-plus-circle"></i> Tambah Rambu
         </a>
     </div>
-    
-    <!-- SEARCH + FILTER BAR -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8" x-data="{ open: false }">
-        <div class="flex flex-wrap gap-4 items-end">
-            <!-- Search -->
-            <div class="flex-1 min-w-64">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Cari Rambu / Lokasi</label>
-                <input type="text" name="search" value="{{ request('search') }}" 
-                       placeholder="Ketik nama rambu atau jalan..."
-                       class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500"
-                       x-on:input.debounce.500ms="const val = $event.target.value; const params = new URLSearchParams(window.location.search); val ? params.set('search', val) : params.delete('search'); window.location = window.location.pathname + (params.toString() ? '?' + params : '')">
-            </div>
-    
-            <!-- Filter Jenis -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Jenis Rambu</label>
-                <select onchange="window.location = updateQueryString('jenis', this.value)" 
-                        class="px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">Semua Jenis</option>
-                    <option value="Larangan" {{ request('jenis') == 'Larangan' ? 'selected' : '' }}>Larangan</option>
-                    <option value="Peringatan" {{ request('jenis') == 'Peringatan' ? 'selected' : '' }}>Peringatan</option>
-                    <option value="Petunjuk" {{ request('jenis') == 'Petunjuk' ? 'selected' : '' }}>Petunjuk</option>
-                    <option value="Perintah" {{ request('jenis') == 'Perintah' ? 'selected' : '' }}>Perintah</option>
-                </select>
-            </div>
-    
-            <!-- Filter Kondisi -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Kondisi</label>
-                <select onchange="window.location = updateQueryString('kondisi', this.value)"
-                        class="px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">Semua Kondisi</option>
-                    <option value="Baik" {{ request('kondisi') == 'Baik' ? 'selected' : '' }}>Baik</option>
-                    <option value="Rusak" {{ request('kondisi') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-                    <option value="Perlu Perbaikan" {{ request('kondisi') == 'Perlu Perbaikan' ? 'selected' : '' }}>Perlu Perbaikan</option>
-                </select>
-            </div>
-    
-            <!-- Filter User (hanya admin) -->
-            @if(auth()->user()->isAdmin())
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Petugas</label>
-                <select onchange="window.location = updateQueryString('user_id', this.value)"
-                        class="px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="">Semua Petugas</option>
-                    @foreach($users as $u)
-                        <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>
-                            {{ $u->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            @endif
-    
-            <!-- Reset Filter -->
-            <div>
-                <a href="{{ route('rambu.index') }}" 
-                   class="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-                    Reset
+
+    <!-- SEARCH + FILTER -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-800 dark:from-gray-900 dark:to-black p-5 border-b border-blue-700 dark:border-gray-700">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-black text-white flex items-center gap-3">
+                    <i class="fas fa-filter"></i> Filter & Pencarian Rambu Lalu Lintas
+                </h3>
+                <a href="{{ route('rambu.index') }}"
+                   class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-800 hover:to-red-900 
+                          text-white font-bold py-3 px-7 rounded-xl shadow-lg transform hover:scale-105 
+                          transition-all duration-300 flex items-center gap-2 text-sm whitespace-nowrap">
+                    <i class="fas fa-times-circle"></i>
+                    Reset Filter
                 </a>
             </div>
         </div>
-    </div>
     
-    <!-- JS Helper untuk update URL -->
-    <script>
-    function updateQueryString(key, value) {
-        const params = new URLSearchParams(window.location.search);
-        if (value === '' || value === 'semua') {
-            params.delete(key);
-        } else {
-            params.set(key, value);
-        }
-        return window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-    }
-    </script>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                
+                <!-- SEARCH BOX -->
+                <div class="lg:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-search text-blue-600 dark:text-blue-400"></i> Cari Rambu / Lokasi
+                    </label>
+                    <input type="text"
+                           placeholder="Contoh: Stop, Jl. Siliwangi, Rambu Larangan..."
+                           value="{{ request('search') }}"
+                           class="w-full px-5 py-4 text-lg rounded-xl border-2 border-gray-300 dark:border-gray-600 
+                                  bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white
+                                  focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 
+                                  transition-all duration-300 shadow-inner"
+                           x-on:input.debounce.600ms="
+                               const val = $event.target.value.trim();
+                               const params = new URLSearchParams(window.location.search);
+                               val ? params.set('search', val) : params.delete('search');
+                               window.location = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+                           ">
+                </div>
+    
+                <!-- JENIS RAMBU -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-sign text-red-600"></i> Jenis Rambu
+                    </label>
+                    <select onchange="updateFilter('jenis', this.value)"
+                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 
+                                   bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white
+                                   focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                        <option value="">Semua Jenis</option>
+                        @foreach(['Larangan','Peringatan','Petunjuk','Perintah'] as $j)
+                            <option value="{{ $j }}" {{ request('jenis') == $j ? 'selected' : '' }}>{{ $j }}</option>
+                        @endforeach
+                    </select>
+                </div>
+    
+                <!-- KONDISI RAMBU -->
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-tools text-orange-600"></i> Kondisi Rambu
+                    </label>
+                    <select onchange="updateFilter('kondisi', this.value)"
+                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 
+                                   bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white
+                                   focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                        <option value="">Semua Kondisi</option>
+                        <option value="Baik" {{ request('kondisi') == 'Baik' ? 'selected' : '' }}>Baik</option>
+                        <option value="Rusak" {{ request('kondisi') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
+                        <option value="Perlu Perbaikan" {{ request('kondisi') == 'Perlu Perbaikan' ? 'selected' : '' }}>
+                            Perlu Perbaikan
+                        </option>
+                    </select>
+                </div>
+    
+                <!-- PETUGAS (Hanya Admin) -->
+                @if(auth()->user()->isAdmin())
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                        <i class="fas fa-user-hard-hat text-yellow-600"></i> Petugas Lapangan
+                    </label>
+                    <select onchange="updateFilter('user_id', this.value)"
+                            class="w-full px-5 py-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 
+                                   bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white
+                                   focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all">
+                        <option value="">Semua Petugas</option>
+                        @foreach($users as $u)
+                            <option value="{{ $u->id }}" {{ request('user_id') == $u->id ? 'selected' : '' }}>
+                                {{ $u->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
 
-    <!-- TABEL DATA RAMBU -->
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+    <!-- TABEL -->
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
+            <table class="min-w-full">
+                <thead class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">No</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Foto</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nama Rambu</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Jenis</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Lokasi</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kondisi</th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Aksi</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase">No</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase">Foto</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase">Nama Rambu</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase">Jenis</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase">Lokasi</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase">Kondisi</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold uppercase">Dibuat</th>
+                        <th class="px-6 py-4 text-center text-xs font-bold uppercase">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($rambus as $rambu)
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ $loop->iteration + ($rambus->currentPage() - 1) * $rambus->perPage() }}</td>
+                        <td class="px-6 py-4 text-center text-sm">
+                            {{ $loop->iteration + ($rambus->currentPage() - 1) * $rambus->perPage() }}
+                        </td>
                         <td class="px-6 py-4">
                             @if($rambu->foto)
-                                <img src="{{ asset('storage/'.$rambu->foto) }}" class="w-16 h-16 object-cover rounded-lg shadow">
+                                <img src="{{ asset('storage/'.$rambu->foto) }}" class="w-16 h-16 object-cover rounded-lg shadow-lg">
                             @else
-                                <div class="bg-gray-200 dark:bg-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-500 rounded-lg w-16 h-16"></div>
+                                <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-lg border-2 border-dashed flex items-center justify-center">
+                                    <i class="fas fa-image text-gray-400"></i>
+                                </div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{{ $rambu->nama_rambu }}</td>
+                        <td class="px-6 py-4 font-bold">{{ $rambu->nama_rambu }}</td>
                         <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold
-                                {{ $rambu->jenis == 'Larangan' ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300' : '' }}
-                                {{ $rambu->jenis == 'Peringatan' ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300' : '' }}
-                                {{ $rambu->jenis == 'Petunjuk' ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300' : '' }}
-                                {{ $rambu->jenis == 'Perintah' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300' : '' }}">
+                            <span class="px-4 py-2 rounded-full text-xs font-bold text-white
+                                {{ $rambu->jenis == 'Larangan' ? 'bg-red-600' : '' }}
+                                {{ $rambu->jenis == 'Peringatan' ? 'bg-yellow-600' : '' }}
+                                {{ $rambu->jenis == 'Petunjuk' ? 'bg-blue-600' : '' }}
+                                {{ $rambu->jenis == 'Perintah' ? 'bg-green-600' : '' }}">
                                 {{ $rambu->jenis }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ Str::limit($rambu->lokasi, 35) }}</td>
+                        <td class="px-6 py-4 text-sm">{{ Str::limit($rambu->lokasi, 40) }}</td>
                         <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold
-                                {{ $rambu->kondisi == 'Baik' ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300' : '' }}
-                                {{ $rambu->kondisi == 'Rusak' ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300' : '' }}
-                                {{ $rambu->kondisi == 'Perlu Perbaikan' ? 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300' : '' }}">
+                            <span class="px-4 py-2 rounded-full text-xs font-bold text-white
+                                {{ $rambu->kondisi == 'Baik' ? 'bg-green-600' : '' }}
+                                {{ $rambu->kondisi == 'Rusak' ? 'bg-red-600' : '' }}
+                                {{ $rambu->kondisi == 'Perlu Perbaikan' ? 'bg-orange-600' : '' }}">
                                 {{ $rambu->kondisi }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm space-x-3">
-                            <a href="{{ route('rambu.show', $rambu) }}" class="text-blue-600 dark:text-blue-400 hover:underline">Lihat</a>
-                            <a href="{{ route('rambu.edit', $rambu) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline">Edit</a>
-                            
-                            <!-- TOMBOL HAPUS DENGAN SWEETALERT2 -->
-                            <button onclick="confirmDelete('{{ route('rambu.destroy', $rambu) }}', '{{ addslashes($rambu->nama_rambu) }}')" 
-                                    class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-bold">
-                                Hapus
+                        <td class="px-6 py-4 text-xs text-gray-600 dark:text-gray-400">
+                            {{ $rambu->created_at->format('d/m/Y') }}<br>
+                            <span class="text-xs">{{ $rambu->created_at->format('H:i') }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center space-x-2">
+                            <a href="{{ route('rambu.show', $rambu) }}"
+                               class="inline-flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition shadow">
+                                <i class="fas fa-eye"></i> Lihat
+                            </a>
+                            <a href="{{ route('rambu.edit', $rambu) }}"
+                               class="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition shadow">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button onclick="confirmDeleteRambu('{{ route('rambu.destroy', $rambu) }}', '{{ addslashes($rambu->nama_rambu) }}')"
+                                    class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition shadow">
+                                <i class="fas fa-trash"></i> Hapus
                             </button>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-12 text-gray-500 dark:text-gray-400 text-lg">
+                        <td colspan="8" class="text-center py-16 text-gray-500 text-xl">
                             Belum ada data rambu
                         </td>
                     </tr>
@@ -151,9 +186,24 @@
                 </tbody>
             </table>
         </div>
-        <div class="bg-gray-50 dark:bg-gray-700 px-6 py-4">
+        <div class="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-t">
             {{ $rambus->onEachSide(2)->links() }}
         </div>
     </div>
 </div>
+
+<script>
+function updateQueryString(key, value) {
+    const params = new URLSearchParams(window.location.search);
+    value ? params.set(key, value) : params.delete(key);
+    window.location = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+}
+</script>
+<script>
+function updateFilter(key, value) {
+    const params = new URLSearchParams(window.location.search);
+    value ? params.set(key, value) : params.delete(key);
+    window.location = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+}
+</script>
 @endsection
